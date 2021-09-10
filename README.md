@@ -29,4 +29,4 @@ func main() {
 }
 ```
 
-## Usage continued ([examples](./exmple/main.go))
+## Usage continued ([examples](./example/main.go))
