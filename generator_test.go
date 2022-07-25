@@ -18,8 +18,8 @@ func includes(items []string, str string, transform func(item string) string) bo
 
 func TestNewUniqueNameGenerator(t *testing.T) {
 	t.Run("should use correct default options", func(t *testing.T) {
-		g := NewUniqueNameGenerator(UNGOpts{})
-		if len(g.Dictionaries) != 3 {
+		g := NewUniqueNameGenerator()
+		if len(g.options.dictionaries) != 3 {
 			t.Error("default generator should use 3 dictionaries")
 		}
 		word := g.Generate()
@@ -39,17 +39,14 @@ func TestNewUniqueNameGenerator(t *testing.T) {
 	})
 
 	t.Run("should respect provided config", func(t *testing.T) {
-		g := NewUniqueNameGenerator(UNGOpts{
-			Dictionaries: [][]string{
-				dictionaries.Colors,
-				dictionaries.Colors,
-				dictionaries.Adjectives,
-				dictionaries.Names,
-			},
-			Separator: "-",
-			Style:     Upper,
-		})
-		if len(g.Dictionaries) != 4 {
+		g := NewUniqueNameGenerator(WithDictionaries([][]string{
+			dictionaries.Colors,
+			dictionaries.Colors,
+			dictionaries.Adjectives,
+			dictionaries.Names,
+		}), WithSeparator("-"), WithStyle(Upper),
+		)
+		if len(g.options.dictionaries) != 4 {
 			t.Error("should have 4 dictionaries")
 		}
 		word := g.Generate()
@@ -70,13 +67,10 @@ func TestNewUniqueNameGenerator(t *testing.T) {
 			t.Error("fourth word should be name")
 		}
 
-		g2 := NewUniqueNameGenerator(UNGOpts{
-			Dictionaries: [][]string{
-				{"dillon"},
-				{"streator"},
-			},
-			Style: Capital,
-		})
+		g2 := NewUniqueNameGenerator(WithDictionaries([][]string{
+			{"dillon"},
+			{"streator"},
+		}), WithStyle(Capital))
 		word = g2.Generate()
 		if word != "Dillon_Streator" {
 			t.Error("it should use Capital casing")
@@ -88,38 +82,45 @@ func TestNewUniqueNameGenerator(t *testing.T) {
 			{"1", "2", "3"},
 			{"1", "2", "3"},
 		}
-		g := NewUniqueNameGenerator(UNGOpts{
-			Dictionaries: dicts,
-		})
+		g := NewUniqueNameGenerator(WithDictionaries(dicts))
 		actual := g.UniquenessCount()
 		expected := uint64(9)
+		if actual != expected {
+			t.Errorf("expected %d combinations with %v but got %d", expected, dicts, actual)
+		}
+
+		g = NewUniqueNameGenerator(WithDictionaries([][]string{}))
+		actual = g.UniquenessCount()
+		expected = uint64(0)
+		if actual != expected {
+			t.Errorf("expected %d combinations with %v but got %d", expected, dicts, actual)
+		}
+
+		g = NewUniqueNameGenerator(WithDictionaries([][]string{{}}))
+		actual = g.UniquenessCount()
+		expected = uint64(0)
 		if actual != expected {
 			t.Errorf("expected %d combinations with %v but got %d", expected, dicts, actual)
 		}
 	})
 
 	t.Run("Sanitizes dictionaries", func(t *testing.T) {
-		g := NewUniqueNameGenerator(UNGOpts{
-			Dictionaries: [][]string{
-				{"St. John"},
-				{"t t"},
-			},
-		})
+		g := NewUniqueNameGenerator(WithDictionaries([][]string{
+			{"St. John"},
+			{"t t"},
+		}))
 		actual := g.Generate()
 		expected := "stjohn_tt"
 		if actual != expected {
 			t.Errorf("expected %s but got %s", expected, actual)
 		}
 
-		g = NewUniqueNameGenerator(UNGOpts{
-			Dictionaries: [][]string{
-				{"St. John"},
-				{"t t"},
-			},
-			Sanitizer: func(str string) string {
-				return strings.Replace(str, " ", "", -1)
-			},
-		})
+		g = NewUniqueNameGenerator(WithDictionaries([][]string{
+			{"St. John"},
+			{"t t"},
+		}), WithSanitizer(func(str string) string {
+			return strings.Replace(str, " ", "", -1)
+		}))
 		actual = g.Generate()
 		expected = "st.john_tt"
 		if actual != expected {

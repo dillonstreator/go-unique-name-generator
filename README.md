@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-    generator := ung.NewUniqueNameGenerator(ung.UNGOpts{})
+    generator := ung.NewUniqueNameGenerator()
 
     fmt.Println(generator.Generate())
     // "{adjective}_{color}_{name}"

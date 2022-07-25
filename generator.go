@@ -9,14 +9,6 @@ import (
 	"github.com/DillonStreator/go-unique-name-generator/dictionaries"
 )
 
-type Style int
-
-const (
-	Lower Style = iota
-	Upper
-	Capital
-)
-
 var alphaNumericReg = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 func sanitizeString(str string) string {
@@ -25,56 +17,40 @@ func sanitizeString(str string) string {
 
 // UniqueNameGenerator is a unique name generator instance
 type UniqueNameGenerator struct {
-	Separator    string
-	Dictionaries [][]string
-	Style        Style
-	Sanitizer    Sanitizer
-}
-
-type Sanitizer func(str string) string
-
-// UNGOpts are the options for creating a new UniqueNameGenerator
-type UNGOpts struct {
-	Separator    string
-	Dictionaries [][]string
-	Style        Style
-	Sanitizer    Sanitizer
+	options *options
 }
 
 // NewUniqueNameGenerator creates a new instance of UniqueNameGenerator
-func NewUniqueNameGenerator(opts UNGOpts) *UniqueNameGenerator {
+func NewUniqueNameGenerator(opts ...option) *UniqueNameGenerator {
 	rand.Seed(time.Now().UTC().UnixNano())
-	separator := opts.Separator
-	if separator == "" {
-		separator = "_"
-	}
-	dicts := opts.Dictionaries
-	if len(dicts) == 0 {
-		dicts = [][]string{
+
+	_opts := &options{
+		separator: "_",
+		dictionaries: [][]string{
 			dictionaries.Adjectives,
 			dictionaries.Colors,
 			dictionaries.Names,
-		}
+		},
+		sanitizer: sanitizeString,
+		style:     Lower,
 	}
-	sanitizer := opts.Sanitizer
-	if sanitizer == nil {
-		sanitizer = sanitizeString
+
+	for _, opt := range opts {
+		opt(_opts)
 	}
+
 	return &UniqueNameGenerator{
-		Separator:    separator,
-		Dictionaries: dicts,
-		Style:        opts.Style,
-		Sanitizer:    sanitizer,
+		options: _opts,
 	}
 }
 
 // Generate generates a new unique name with the configuration
 func (ung *UniqueNameGenerator) Generate() string {
-	words := make([]string, len(ung.Dictionaries))
-	for i, dict := range ung.Dictionaries {
+	words := make([]string, len(ung.options.dictionaries))
+	for i, dict := range ung.options.dictionaries {
 		randomIndex := rand.Intn(len(dict))
-		word := ung.Sanitizer(dict[randomIndex])
-		switch ung.Style {
+		word := ung.options.sanitizer(dict[randomIndex])
+		switch ung.options.style {
 		case Lower:
 			word = strings.ToLower(word)
 		case Upper:
@@ -84,13 +60,16 @@ func (ung *UniqueNameGenerator) Generate() string {
 		}
 		words[i] = word
 	}
-	return strings.Join(words, ung.Separator)
+	return strings.Join(words, ung.options.separator)
 }
 
 // UniquenessCount returns the number of unique combinations
 func (ung *UniqueNameGenerator) UniquenessCount() uint64 {
+	if len(ung.options.dictionaries) == 0 {
+		return 0
+	}
 	var count uint64 = 1
-	for _, set := range ung.Dictionaries {
+	for _, set := range ung.options.dictionaries {
 		count *= uint64(len(set))
 	}
 	return count

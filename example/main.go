@@ -9,36 +9,33 @@ import (
 )
 
 func main() {
-	defaultGenerator := ung.NewUniqueNameGenerator(ung.UNGOpts{})
-	generator1 := ung.NewUniqueNameGenerator(ung.UNGOpts{
-		Dictionaries: [][]string{
-			dictionaries.Adjectives,
-			dictionaries.Adjectives,
-			dictionaries.Colors,
-			dictionaries.Animals,
-		},
-		Separator: ".",
-		Style:     ung.Upper,
-	})
-	generator2 := ung.NewUniqueNameGenerator(ung.UNGOpts{
-		Dictionaries: [][]string{
-			dictionaries.Colors,
-			dictionaries.Animals,
-			dictionaries.Names,
-		},
-		Separator: "-",
-		Style:     ung.Capital,
-	})
-	generator3 := ung.NewUniqueNameGenerator(ung.UNGOpts{
-		Dictionaries: [][]string{
+	defaultGenerator := ung.NewUniqueNameGenerator()
+	generator1 := ung.NewUniqueNameGenerator(
+		ung.WithDictionaries([][]string{}),
+		ung.WithSeparator("."),
+		ung.WithStyle(ung.Upper),
+	)
+	generator2 := ung.NewUniqueNameGenerator(
+		ung.WithDictionaries(
+			[][]string{
+				dictionaries.Colors,
+				dictionaries.Animals,
+				dictionaries.Names,
+			},
+		),
+		ung.WithSeparator("-"),
+		ung.WithStyle(ung.Capital),
+	)
+	generator3 := ung.NewUniqueNameGenerator(
+		ung.WithDictionaries([][]string{
 			dictionaries.Colors,
 			dictionaries.Adjectives,
 			dictionaries.Drinks,
-		},
-		Sanitizer: func(str string) string {
+		}),
+		ung.WithSanitizer(func(str string) string {
 			return strings.Replace(str, " ", "", -1)
-		},
-	})
+		}),
+	)
 
 	fmt.Printf("defaultGenerator possible unique names: %d\n", defaultGenerator.UniquenessCount())
 	fmt.Printf("defaultGenerator name: %s\n", defaultGenerator.Generate())
