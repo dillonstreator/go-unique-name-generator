@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/DillonStreator/go-unique-name-generator/dictionaries"
+	"github.com/dillonstreator/go-unique-name-generator/dictionaries"
 )
 
 var alphaNumericReg = regexp.MustCompile("[^a-zA-Z0-9]+")
@@ -17,14 +17,17 @@ func sanitizeString(str string) string {
 
 // UniqueNameGenerator is a unique name generator instance
 type UniqueNameGenerator struct {
-	options *options
+	separator    string
+	dictionaries [][]string
+	style        Style
+	sanitizer    Sanitizer
+
+	rnd *rand.Rand
 }
 
 // NewUniqueNameGenerator creates a new instance of UniqueNameGenerator
 func NewUniqueNameGenerator(opts ...option) *UniqueNameGenerator {
-	rand.Seed(time.Now().UTC().UnixNano())
-
-	_opts := &options{
+	ung := &UniqueNameGenerator{
 		separator: "_",
 		dictionaries: [][]string{
 			dictionaries.Adjectives,
@@ -33,24 +36,23 @@ func NewUniqueNameGenerator(opts ...option) *UniqueNameGenerator {
 		},
 		sanitizer: sanitizeString,
 		style:     Lower,
+		rnd:       rand.New(rand.NewSource(time.Now().UTC().UnixNano())),
 	}
 
 	for _, opt := range opts {
-		opt(_opts)
+		opt(ung)
 	}
 
-	return &UniqueNameGenerator{
-		options: _opts,
-	}
+	return ung
 }
 
 // Generate generates a new unique name with the configuration
 func (ung *UniqueNameGenerator) Generate() string {
-	words := make([]string, len(ung.options.dictionaries))
-	for i, dict := range ung.options.dictionaries {
-		randomIndex := rand.Intn(len(dict))
-		word := ung.options.sanitizer(dict[randomIndex])
-		switch ung.options.style {
+	words := make([]string, len(ung.dictionaries))
+	for i, dict := range ung.dictionaries {
+		randomIndex := ung.rnd.Intn(len(dict))
+		word := ung.sanitizer(dict[randomIndex])
+		switch ung.style {
 		case Lower:
 			word = strings.ToLower(word)
 		case Upper:
@@ -60,16 +62,16 @@ func (ung *UniqueNameGenerator) Generate() string {
 		}
 		words[i] = word
 	}
-	return strings.Join(words, ung.options.separator)
+	return strings.Join(words, ung.separator)
 }
 
 // UniquenessCount returns the number of unique combinations
 func (ung *UniqueNameGenerator) UniquenessCount() uint64 {
-	if len(ung.options.dictionaries) == 0 {
+	if len(ung.dictionaries) == 0 {
 		return 0
 	}
 	var count uint64 = 1
-	for _, set := range ung.options.dictionaries {
+	for _, set := range ung.dictionaries {
 		count *= uint64(len(set))
 	}
 	return count

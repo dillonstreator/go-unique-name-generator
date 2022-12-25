@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	ung "github.com/DillonStreator/go-unique-name-generator"
-	"github.com/DillonStreator/go-unique-name-generator/dictionaries"
+	ung "github.com/dillonstreator/go-unique-name-generator"
+	"github.com/dillonstreator/go-unique-name-generator/dictionaries"
 )
 
 func main() {

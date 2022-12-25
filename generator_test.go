@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/DillonStreator/go-unique-name-generator/dictionaries"
+	"github.com/dillonstreator/go-unique-name-generator/dictionaries"
 )
 
 func includes(items []string, str string, transform func(item string) string) bool {
@@ -19,7 +19,7 @@ func includes(items []string, str string, transform func(item string) string) bo
 func TestNewUniqueNameGenerator(t *testing.T) {
 	t.Run("should use correct default options", func(t *testing.T) {
 		g := NewUniqueNameGenerator()
-		if len(g.options.dictionaries) != 3 {
+		if len(g.dictionaries) != 3 {
 			t.Error("default generator should use 3 dictionaries")
 		}
 		word := g.Generate()
@@ -46,7 +46,7 @@ func TestNewUniqueNameGenerator(t *testing.T) {
 			dictionaries.Names,
 		}), WithSeparator("-"), WithStyle(Upper),
 		)
-		if len(g.options.dictionaries) != 4 {
+		if len(g.dictionaries) != 4 {
 			t.Error("should have 4 dictionaries")
 		}
 		word := g.Generate()

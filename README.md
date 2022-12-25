@@ -4,7 +4,7 @@
 
 ## Installation
 ```sh
-go get github.com/DillonStreator/go-unique-name-generator
+go get github.com/dillonstreator/go-unique-name-generator
 ```
 
 ## Basic Usage
@@ -15,7 +15,7 @@ package main
 import (
     "fmt"
 
-    ung "github.com/DillonStreator/go-unique-name-generator"
+    ung "github.com/dillonstreator/go-unique-name-generator"
 )
 
 func main() {

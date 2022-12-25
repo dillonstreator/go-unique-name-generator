@@ -1,3 +1,3 @@
-module github.com/DillonStreator/go-unique-name-generator
+module github.com/dillonstreator/go-unique-name-generator
 
-go 1.18
+go 1.19

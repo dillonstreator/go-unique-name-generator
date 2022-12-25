@@ -10,35 +10,28 @@ const (
 	Capital
 )
 
-type options struct {
-	separator    string
-	dictionaries [][]string
-	style        Style
-	sanitizer    Sanitizer
-}
-
-type option func(opts *options)
+type option func(ung *UniqueNameGenerator)
 
 func WithSeparator(separator string) option {
-	return func(opts *options) {
-		opts.separator = separator
+	return func(ung *UniqueNameGenerator) {
+		ung.separator = separator
 	}
 }
 
 func WithDictionaries(dictionaries [][]string) option {
-	return func(opts *options) {
-		opts.dictionaries = dictionaries
+	return func(ung *UniqueNameGenerator) {
+		ung.dictionaries = dictionaries
 	}
 }
 
 func WithStyle(style Style) option {
-	return func(opts *options) {
-		opts.style = style
+	return func(ung *UniqueNameGenerator) {
+		ung.style = style
 	}
 }
 
 func WithSanitizer(sanitizer Sanitizer) option {
-	return func(opts *options) {
-		opts.sanitizer = sanitizer
+	return func(ung *UniqueNameGenerator) {
+		ung.sanitizer = sanitizer
 	}
 }
