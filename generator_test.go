@@ -1,6 +1,7 @@
 package uniquenamegenerator
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 
@@ -18,7 +19,9 @@ func includes(items []string, str string, transform func(item string) string) bo
 
 func TestNewUniqueNameGenerator(t *testing.T) {
 	t.Run("should use correct default options", func(t *testing.T) {
-		g := NewUniqueNameGenerator()
+		g := NewUniqueNameGenerator(
+			WithTransformer(strings.ToLower),
+		)
 		if len(g.dictionaries) != 3 {
 			t.Error("default generator should use 3 dictionaries")
 		}
@@ -39,12 +42,15 @@ func TestNewUniqueNameGenerator(t *testing.T) {
 	})
 
 	t.Run("should respect provided config", func(t *testing.T) {
-		g := NewUniqueNameGenerator(WithDictionaries([][]string{
-			dictionaries.Colors,
-			dictionaries.Colors,
-			dictionaries.Adjectives,
-			dictionaries.Names,
-		}), WithSeparator("-"), WithStyle(Upper),
+		g := NewUniqueNameGenerator(
+			WithDictionaries([][]string{
+				dictionaries.Colors,
+				dictionaries.Colors,
+				dictionaries.Adjectives,
+				dictionaries.Names,
+			}),
+			WithSeparator("-"),
+			WithTransformer(strings.ToUpper),
 		)
 		if len(g.dictionaries) != 4 {
 			t.Error("should have 4 dictionaries")
@@ -70,10 +76,10 @@ func TestNewUniqueNameGenerator(t *testing.T) {
 		g2 := NewUniqueNameGenerator(WithDictionaries([][]string{
 			{"dillon"},
 			{"streator"},
-		}), WithStyle(Capital))
+		}), WithTransformer(func(s string) string { return strings.ToUpper(s) }))
 		word = g2.Generate()
-		if word != "Dillon_Streator" {
-			t.Error("it should use Capital casing")
+		if word != "DILLON_STREATOR" {
+			t.Error("it should transform to upper")
 		}
 	})
 
@@ -105,10 +111,16 @@ func TestNewUniqueNameGenerator(t *testing.T) {
 	})
 
 	t.Run("Sanitizes dictionaries", func(t *testing.T) {
-		g := NewUniqueNameGenerator(WithDictionaries([][]string{
-			{"St. John"},
-			{"t t"},
-		}))
+		re := regexp.MustCompile("[. ]")
+		g := NewUniqueNameGenerator(
+			WithDictionaries([][]string{
+				{"St. John"},
+				{"t t"},
+			}),
+			WithTransformer(func(s string) string {
+				return strings.ToLower(re.ReplaceAllString(s, ""))
+			}),
+		)
 		actual := g.Generate()
 		expected := "stjohn_tt"
 		if actual != expected {
@@ -118,8 +130,8 @@ func TestNewUniqueNameGenerator(t *testing.T) {
 		g = NewUniqueNameGenerator(WithDictionaries([][]string{
 			{"St. John"},
 			{"t t"},
-		}), WithSanitizer(func(str string) string {
-			return strings.Replace(str, " ", "", -1)
+		}), WithTransformer(func(s string) string {
+			return strings.ToLower(strings.ReplaceAll(s, " ", ""))
 		}))
 		actual = g.Generate()
 		expected = "st.john_tt"

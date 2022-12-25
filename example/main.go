@@ -13,7 +13,6 @@ func main() {
 	generator1 := ung.NewUniqueNameGenerator(
 		ung.WithDictionaries([][]string{}),
 		ung.WithSeparator("."),
-		ung.WithStyle(ung.Upper),
 	)
 	generator2 := ung.NewUniqueNameGenerator(
 		ung.WithDictionaries(
@@ -24,7 +23,6 @@ func main() {
 			},
 		),
 		ung.WithSeparator("-"),
-		ung.WithStyle(ung.Capital),
 	)
 	generator3 := ung.NewUniqueNameGenerator(
 		ung.WithDictionaries([][]string{
@@ -32,7 +30,7 @@ func main() {
 			dictionaries.Adjectives,
 			dictionaries.Drinks,
 		}),
-		ung.WithSanitizer(func(str string) string {
+		ung.WithTransformer(func(str string) string {
 			return strings.Replace(str, " ", "", -1)
 		}),
 	)
