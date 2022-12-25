@@ -140,3 +140,12 @@ func TestNewUniqueNameGenerator(t *testing.T) {
 		}
 	})
 }
+
+func BenchmarkUniqueNameGenerator_Generate(b *testing.B) {
+	ung := NewUniqueNameGenerator()
+
+	for i := 0; i < b.N; i++ {
+		ung.Generate()
+	}
+
+}
